@@ -22,11 +22,11 @@ library(shiny)
 library(shinydashboard)
 library(shinythemes)
 
-source("~/Documents/git/microclimates/analyses/source/sims_hypoth_sourcedata.R")
-source("~/Documents/git/microclimates/analyses/source/sims_params_sourcedata.R")
-source("~/Documents/git/microclimates/analyses/source/sims_warm_sourcedata.R")
+source("~/Documents/git/microapp/sims_hypoth_sourcedata.R")
+source("~/Documents/git/microapp/sims_params_sourcedata.R")
+source("~/Documents/git/microapp/sims_warm_sourcedata.R")
 
-df <- read.csv("~/Documents/git/microclimates/analyses/output/cleanmicro_gdd_2019.csv")
+df <- read.csv("~/Documents/git/microapp/cleanmicro_gdd_2019.csv")
 
 
 
@@ -221,7 +221,7 @@ ui <- fluidPage(theme = shinytheme("united"),
                                              value = 50, min = 0, max = 100),
                                      numericInput(inputId = "warmmax",
                                                  label = "Maximum Range of Warming (°C)",
-                                                 value = 0, min = 0, max = 10),
+                                                 value = 1, min = 1, max = 10),
                                      actionButton("warmrun", "View Plot",
                                                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                             )
