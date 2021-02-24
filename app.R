@@ -709,14 +709,14 @@ server <- function(input, output) {
       urbmethod_fake = stan('~/Documents/git/microclimates/analyses/stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
                             iter = 1000, warmup=500, chains=4)#, control=list(adapt_delta=0.99, max_treedepth=15)) ### 
       
-      
+    
       
       
       #})
       
       cols <- adjustcolor("indianred3", alpha.f = 0.3) 
       my.pal <-rep(viridis_pal(option="viridis")(9),2)
-      my.pch <- rep(15:18, each=10)
+      my.pch <- rep(15:18, each=9)
       alphahere = 0.4
       
       modoutput <- summary(urbmethod_fake)$summary
@@ -733,8 +733,8 @@ server <- function(input, output) {
       bball <- get.datareal
       spnum <- length(unique(bball$spp))
       par(xpd=FALSE)
-      par(mar=c(5,10,3,10))
-      plot(x=NULL,y=NULL, xlim=if(use.real=="prov"){c(-30,30)} else if(use.real=="urban"){c(-100,100)}, yaxt='n', ylim=c(0,6),
+      par(mar=c(5,9,3,11))
+      plot(x=NULL,y=NULL, xlim=if(use.real=="prov"){c(-30,25)} else if(use.real=="urban"){c(-100,100)}, yaxt='n', ylim=c(0,6),
            xlab="Model estimate change in growing degree days to budburst", ylab="")
       axis(2, at=1:6, labels=rev(labs), las=1)
       abline(v=0, lty=2, col="darkgrey")
@@ -757,7 +757,7 @@ server <- function(input, output) {
         }
       }
       par(xpd=TRUE) # so I can plot legend outside
-      legend(if(use.real=="prov"){40}else if(use.real=="urban"){120}, 6, sort(unique(gsub("_", " ", bball$spp))), pch=my.pch[1:spnum],
+      legend(if(use.real=="prov"){30}else if(use.real=="urban"){120}, 6, sort(unique(gsub("_", " ", bball$spp))), pch=my.pch[1:spnum],
              col=alpha(my.pal[1:spnum], alphahere),
              cex=1, bty="n", text.font=3)
     })
