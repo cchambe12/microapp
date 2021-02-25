@@ -22,11 +22,11 @@ library(shiny)
 library(shinydashboard)
 library(shinythemes)
 
-source("~/Documents/git/microapp/sims_hypoth_sourcedata.R")
-source("~/Documents/git/microapp/sims_params_sourcedata.R")
-source("~/Documents/git/microapp/sims_warm_sourcedata.R")
+source("sims_hypoth_sourcedata.R")
+source("sims_params_sourcedata.R")
+source("sims_warm_sourcedata.R")
 
-df <- read.csv("~/Documents/git/microapp/cleanmicro_gdd_2019.csv")
+df <- read.csv("cleanmicro_gdd_2019.csv")
 
 
 
