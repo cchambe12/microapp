@@ -541,7 +541,7 @@ server <- function(input, output) {
       progress$set(message = "Running rStan Model", 
                    detail="\nThis may take a while...")
       
-      urbmethod_fake = stan('~/Documents/git/microclimates/analyses/stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
+      urbmethod_fake = stan('stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
                                            iter = 1000, warmup=500, chains=4)#, control=list(adapt_delta=0.99, max_treedepth=15)) ### 
                      
       
@@ -622,7 +622,7 @@ server <- function(input, output) {
       progress$set(message = "Running rStan Model", 
                    detail="\nThis may take a while...")
       
-      urbmethod_fake = stan('~/Documents/git/microclimates/analyses/stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
+      urbmethod_fake = stan('stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
                             iter = 1000, warmup=500, chains=4)#, control=list(adapt_delta=0.99, max_treedepth=15)) ### 
       
       
@@ -706,7 +706,7 @@ server <- function(input, output) {
       progress$set(message = "Running rStan Model", 
                    detail="This may take a while...")
       
-      urbmethod_fake = stan('~/Documents/git/microclimates/analyses/stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
+      urbmethod_fake = stan('stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
                             iter = 1000, warmup=500, chains=4)#, control=list(adapt_delta=0.99, max_treedepth=15)) ### 
       
     
