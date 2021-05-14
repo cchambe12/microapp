@@ -9,35 +9,37 @@ library(tidyr)
 set.seed(12321)
 
 if(FALSE){
-  hypoth <- "hobo"  ## hobo, urban, prov
-  hypoth.para <- "ws"
-  hypoth.mu <- 0
-  hypoth.sd <- 30   ### This just adds that amount of imprecision to the hypothesis question
+  hypoth <- "urban"  ## hobo, urban, prov
+  hypoth.para <- "ws" ## ws, hobo, NA
+  hypoth.mu <- -30
+  hypoth.sd <- 5   ### This just adds that amount of imprecision to the hypothesis question
+  hypoth.para.mu <- -5
+  hypoth.para.sd <- 15
   fstar.num <- 300  ## GDD threshold
   fstar.sd <- 20
-  meantemp <- 10
-  meantemp.sd <- 3
-  micro.sd <- 0
-  #arbclim <- 11   ### tmean arb climate
-  #arbclim.sd <- 4
-  #arbmicroclim <- 1  ### tmean added to arb climate base, if positive then hobos are recording warmer temperatures
-  #arbmicroclim.sd <- 0
-  #hfclim <- 9  ## tmean hf climate
-  #hfclim.sd <- 2
-  #hfmicroclim <- -1  ### tmean added to hf climate base, if positive then hobos are recording warmer temperatures
-  #hfmicroclim.sd <- 0
+  #meantemp <- 10
+  #meantemp.sd <- 5   
+  #micro.sd <- 0
+  arbclim <- 5   ### tmean arb climate
+  arbclim.sd <- 2
+  arbmicroclim <- 10  ### tmean added to arb climate base, if positive then hobos are recording warmer temperatures
+  arbmicroclim.sd <- 2
+  hfclim <- 10  ## tmean hf climate
+  hfclim.sd <- 2
+  hfmicroclim <- -5  ### tmean added to hf climate base, if positive then hobos are recording warmer temperatures
+  hfmicroclim.sd <- 2
 }
 
 
-bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.sd, meantemp, meantemp.sd, micro.sd){
+gddfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, hypoth.para.mu, hypoth.para.sd, fstar.num, fstar.sd, arbclim, arbclim.sd, arbmicroclim, arbmicroclim.sd, hfclim, hfclim.sd, hfmicroclim, hfmicroclim.sd){
   
   # Step 1: Set up years, days per year, temperatures, sampling frequency, required GDD (fstar)
-  daysperyr <- 60 #### just to make sure we don't get any NAs
-  nspps <- 15
-  ninds <- 50
+  daysperyr <- 120 #### just to make sure we don't get any NAs
+  nspps <- 15 
+  ninds <- 50 
   nobs <- nspps*ninds
   nsites <- 2  ### Arboretum versus the Forest
-  nmicros <- 15  ### Number microsites per site
+  nmicros <- 15  ### Number microsites per site so 20 total 
   nmethods <- 2
   ntot <- nobs * nmethods * nsites
   
@@ -46,19 +48,19 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
   fstarspeciessd <- fstar.sd ### sigma_a_sp in model output
   
   ## Sigma_y to be added at the end
-  sigma_y <- 15
+  sigma_y <- 20
   
   ### Now the climate data 
   dayz <- rep(1:daysperyr, nobs)
-  cc.arb <- cc.hf <- meantemp
-  sigma.arb <- sigma.hf <- meantemp.sd
-  microarb.effect <- microhf.effect <- 0
-  microsigmaarb.effect <- microsigmahf.effect <- micro.sd  #### by keeping the sigmas the same for the microsites (line 94 & 99) we assume that the microclimatic effects are the same across sites
+  cc.arb <- arbclim
+  sigma.arb <- arbclim.sd
+  microarb.effect <- arbmicroclim
+  microsigmaarb.effect <- arbmicroclim.sd  #### by keeping the sigmas the same for the microsites (line 94 & 99) we assume that the microclimatic effects are the same across sites
   
-  #cc.hf <- hfclim
-  #sigma.hf <- hfclim.sd
-  #microhf.effect <- hfmicroclim
-  #microsigmahf.effect <- hfmicroclim.sd  #### by keeping the sigmas the same for the microsites (line 94 & 99) we assume that the microclimatic effects are the same across sites
+  cc.hf <- hfclim
+  sigma.hf <- hfclim.sd
+  microhf.effect <- hfmicroclim
+  microsigmahf.effect <- hfmicroclim.sd  #### by keeping the sigmas the same for the microsites (line 94 & 99) we assume that the microclimatic effects are the same across sites
   
   
   #### Next I set up an fstar or a GDD threshold for each individual
@@ -84,8 +86,8 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
                         site = as.character("arb"))
   
   ### This is how I get weather station data versus hobo logger data
-  arbclim$tmean <- ifelse(arbclim$method=="hobo", rnorm(as.numeric(arbclim$day), cc.arb, meantemp.sd + micro.sd), 
-                          rnorm(as.numeric(arbclim$day), cc.arb, meantemp.sd)) 
+  arbclim$tmean <- ifelse(arbclim$method=="hobo", rnorm(as.numeric(arbclim$day), cc.arb + microarb.effect, sigma.arb + microsigmaarb.effect), 
+                          rnorm(as.numeric(arbclim$day), cc.arb, sigma.arb)) 
   ### and now we draw from mean and sigma for each day to find daily temp for each microsite
   
   #### Harvard Forest climate data, weather station data
@@ -97,8 +99,8 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
                        site = as.character("hf"))
   
   ### Again, where I set up the difference between hobo logger and weather station
-  hfclim$tmean <- ifelse(hfclim$method=="hobo", rnorm(hfclim$day, cc.hf, meantemp.sd + micro.sd), 
-                         rnorm(hfclim$day, cc.hf, meantemp.sd)) 
+  hfclim$tmean <- ifelse(hfclim$method=="hobo", rnorm(as.numeric(hfclim$day), cc.hf + microhf.effect, sigma.hf + microsigmahf.effect), 
+                          rnorm(as.numeric(hfclim$day), cc.hf, sigma.hf))
   ### and now we draw from mean and sigma for each day to find daily temp for each microsite
   
   
@@ -122,7 +124,7 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
   df$gdd.obs <- ave(df$tmean, df$spind_site_method, FUN=cumsum)
   
   ## Find the day of budburst to find the actual GDD versus the "observed GDD"
-  for(i in c(unique(df$spind_site_method))){ # i="9_10hfhobo2"
+  for(i in c(unique(df$spind_site_method))){ # i="1_1arbws"
     
     bb <- which(df$gdd.obs[i==df$spind_site_method] >= df$fstarspp[i==df$spind_site_method])[1]
     df$bb[i==df$spind_site_method] <- bb
@@ -130,6 +132,7 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
   }
   
   df.bb <- df[(df$bb==df$day),]
+  df.bb <- na.omit(df.bb)
   
   ### Started 25 May 2020 by Cat
   # Updated 2 Feb 2021 by Cat
@@ -143,36 +146,11 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
     hypoth_para <- hypoth.para
     ########################### ADDING IN HYPOTHESIS HERE! ################################
     ### I think this should just make the weather station less accurate...??? I hope.
-    df.bb$hyp_b <- ifelse(df.bb$method==hypoth.para, 1, 0)  ## This won't be spit out of the model. If it's the weather station, make it a 1 if it's the hobo logger make it a 0
+    df.bb$hyp_b <- ifelse(df.bb$method==hypoth_para, 1, 0)  ## This won't be spit out of the model. If it's the weather station, make it a 1 if it's the hobo logger make it a 0
     ### Now, I am just adding more sigma to the weather station fstar values, seen by sd=ws_sd (which was 20) # emw -- deleted starter of df.fstar$gdd.noise + from above
-    df.bb$gdd.noise <- df.bb$hyp_b * unlist(lapply(1:nspps, FUN = function(x){rep(rnorm(n = 1, mean = hypoth_mu, sd = 20), ninds*nsites)}))
+    df.bb$gdd.noise <- df.bb$hyp_b * rep(rnorm(n=nspps, mean=hypoth_mu, sd=hypoth_sd), each=ninds*nsites) 
     
-    df.bb$gdd <- df.bb$gdd.obs + df.bb$gdd.noise + rnorm(ntot, mean=0, sd=sigma_y)
-    
-    ##### Now add in provenance so better able to compare to other simulations
-    spind <- paste(rep(c(1:nspps), each=ninds), rep(1:ninds, nspps), sep="_")
-    provenance.hf <- 42.5
-    provenance.arb <- round(rnorm(nobs, provenance.hf, 5), digits=2)
-    
-    df.prov <- as.data.frame(cbind(sp_ind = rep(rep(spind, nsites),each=nmethods), 
-                                   site = rep(c("arb", "hf"), each=nobs*nmethods),
-                                   provenance = c(rep(provenance.arb, each=nmethods), rep(provenance.hf, ninds*nspps*nmethods)),
-                                   method = rep(c("ws", "hobo"), nsites*nobs)))
-    df.prov$species <- as.numeric(gsub("\\_.*" , "", df.prov$sp_ind))
-    df.prov$ind <- gsub(".*_" , "", df.prov$sp_ind)
-    df.prov$sp_ind <- NULL
-    df.bb$species <- as.numeric(df.bb$species)
-    
-    df.prov$ind <- as.integer(df.prov$ind)
-    df.bb <- left_join(df.bb, df.prov)
-    
-  }
-  
-  if(hypoth=="NA"){
-    #### This is where I test our hypothesis. This doesn't come out of the model directly
-    df.bb$gdd.noise <- 0
-    
-    df.bb$gdd <- df.bb$gdd.obs + rnorm(ntot, mean=0, sd=sigma_y)
+    df.bb$gdd <- df.bb$gdd.obs + df.bb$gdd.noise + rnorm(nrow(df.bb), mean=0, sd=sigma_y)
     
     ##### Now add in provenance so better able to compare to other simulations
     spind <- paste(rep(c(1:nspps), each=ninds), rep(1:ninds, nspps), sep="_")
@@ -193,15 +171,16 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
     
   }
   
-  if(hypoth=="urban"){
+  if(hypoth=="urban" & hypoth.para=="NA"){
     urbeffect = hypoth.mu
     urbsd = hypoth.sd
     
     ##### We should get these back in parameter estimates
     df.bb$urbtx <- ifelse(df.bb$site=="arb", 1, 0)
-    df.bb$gdd.noise  <- df.bb$urbtx * rep(rnorm(n=nspps, mean=urbeffect, sd=urbsd), each=ninds*nmethods)
+    df.bb$gdd.noise  <- df.bb$urbtx * rep(rnorm(n=nspps, mean=urbeffect, sd=urbsd), each=ninds*nmethods)  
     
     df.bb$gdd <- df.bb$gdd.obs + df.bb$gdd.noise + rnorm(n=ntot, mean=0, sd=sigma_y)
+    df.bb$species <- as.numeric(df.bb$species)
     
     ##### Now add in provenance so better able to compare to other simulations
     spind <- paste(rep(c(1:nspps), each=ninds), rep(1:ninds, nspps), sep="_")
@@ -210,19 +189,18 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
     
     df.prov <- as.data.frame(cbind(sp_ind = rep(rep(spind, nsites),each=nmethods), 
                                    site = rep(c("arb", "hf"), each=nobs*nmethods),
-                                   provenance = c(rep(provenance.arb, each=nmethods), rep(provenance.hf, ninds*nspps*nmethods)),
+                                   provenance = c(rep(provenance.arb, each=nmethods), rep(provenance.hf, nobs*nmethods)),
                                    method = rep(c("ws", "hobo"), nsites*nobs)))
     df.prov$species <- as.numeric(gsub("\\_.*" , "", df.prov$sp_ind))
     df.prov$ind <- gsub(".*_" , "", df.prov$sp_ind)
     df.prov$sp_ind <- NULL
-    df.bb$species <- as.numeric(df.bb$species)
     
     df.prov$ind <- as.integer(df.prov$ind)
-    df.bb <- left_join(df.bb, df.prov)
+    df.bb <- full_join(df.bb, df.prov)
     
   }
   
-  if(hypoth=="prov"){ ### This is the provenance model
+  if(hypoth=="prov" & hypoth.para=="NA"){ ### This is the provenance model
     prov_effect = hypoth.mu
     prov_sd = hypoth.sd
     
@@ -240,17 +218,13 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
     
     df.prov$species <- as.numeric(df.prov$species)
     df.prov$provenance <- as.numeric(df.prov$provenance)
-    df.prov$prov.z <- (df.prov$provenance-42.5)/(2*sd(df.prov$provenance,na.rm=TRUE))
-    #df.prov$provdiff <- df.prov$provenance-42.5
-    
-    df.prov <- df.prov[!duplicated(df.prov),]
+    df.prov$prov.z <- (df.prov$provenance-mean(df.prov$provenance,na.rm=TRUE))/(sd(df.prov$provenance,na.rm=TRUE))
     
     df.prov$ind <- as.numeric(df.prov$ind)
     df.bb <- full_join(df.bb, df.prov)
     
     # Generate random parameters (by species)
-    df.bb$gdd.noise <- df.bb$prov.z * rep(rnorm(n=nspps, mean=prov_effect, sd=prov_sd), each=ninds*nmethods)
-    #df.bb$gdd.noise <- df.bb$provdiff * rnorm(n=ntot, mean=prov_effect, sd=prov_sd)
+    df.bb$gdd.noise <- df.bb$prov.z * rep(rnorm(n=nspps, mean=prov_effect, sd=prov_sd), each=ninds*nsites)
     
     df.bb$gdd <- df.bb$gdd.obs + df.bb$gdd.noise + rnorm(n=ntot, mean=0, sd=sigma_y)
     df.bb <- df.bb[!duplicated(df.bb),]
@@ -259,20 +233,57 @@ bbfunc <- function(hypoth, hypoth.para, hypoth.mu, hypoth.sd, fstar.num, fstar.s
     
   }
   
+  if(hypoth=="urban" & hypoth.para%in%c("ws", "hobo")){
+    urbeffect = hypoth.mu
+    urbsd = hypoth.sd
+    hypoth_para = hypoth.para.mu
+    hypoth_parasd = hypoth.para.sd
+    
+    hypoth_para <- hypoth.para
+    ########################### ADDING IN HYPOTHESIS HERE! ################################
+    ### I think this should just make the weather station less accurate...??? I hope.
+    df.bb$hyp_b <- ifelse(df.bb$method==hypoth_para, 1, 0)  ## This won't be spit out of the model. If it's the weather station, make it a 1 if it's the hobo logger make it a 0
+    ### Now, I am just adding more sigma to the weather station fstar values, seen by sd=ws_sd (which was 20) # emw -- deleted starter of df.fstar$gdd.noise + from above
+    df.bb$gdd.noise <- df.bb$hyp_b * rep(rnorm(n=nspps, mean=hypoth.para.mu, sd=hypoth_parasd), each=ninds*nsites) 
+
+    ##### Now we add in the urban effect
+    df.bb$urbtx <- ifelse(df.bb$site=="arb", 1, 0)
+    df.bb$gdd.noise  <- df.bb$gdd.noise + df.bb$urbtx * rep(rnorm(n=nspps, mean=urbeffect, sd=urbsd), each=ninds*nmethods)  
+    
+    df.bb$gdd <- df.bb$gdd.obs + df.bb$gdd.noise + rnorm(n=ntot, mean=0, sd=sigma_y)
+    df.bb$species <- as.numeric(df.bb$species)
+    
+    ##### Now add in provenance so better able to compare to other simulations
+    spind <- paste(rep(c(1:nspps), each=ninds), rep(1:ninds, nspps), sep="_")
+    provenance.hf <- 42.5
+    provenance.arb <- round(rnorm(nobs, provenance.hf, 5), digits=2)
+    
+    df.prov <- as.data.frame(cbind(sp_ind = rep(rep(spind, nsites),each=nmethods), 
+                                   site = rep(c("arb", "hf"), each=nobs*nmethods),
+                                   provenance = c(rep(provenance.arb, each=nmethods), rep(provenance.hf, nobs*nmethods)),
+                                   method = rep(c("ws", "hobo"), nsites*nobs)))
+    df.prov$species <- as.numeric(gsub("\\_.*" , "", df.prov$sp_ind))
+    df.prov$ind <- gsub(".*_" , "", df.prov$sp_ind)
+    df.prov$sp_ind <- NULL
+    
+    df.prov$ind <- as.integer(df.prov$ind)
+    df.bb <- full_join(df.bb, df.prov)
+    
+  }
+  
   ##### Clean up the dataframe to prepare for analyses
-  df.bb <- subset(df.bb, select=c("site", "microsite", "method", "species", "ind", "gdd.noise", "fstarspp", "gdd", "provenance", "bb")) # 
+  df.bb <- subset(df.bb, select=c("site", "method", "species", "ind", "gdd.noise", "fstarspp", "gdd", "provenance", "bb")) # 
   
   bball <- df.bb[!duplicated(df.bb),]
   
   
   ##### Now let's do some checks...
   bball$gdd_accuracy <- bball$gdd - bball$fstarspp
-  bball$gdd_ratio <- bball$gdd/bball$fstarspp
   bball$type <- ifelse(bball$method=="ws", 1, 0)
   
   bball <- na.omit(bball)
   
-  #lme4::lmer(gdd ~ method + site + (method + site | species), data=bball)
+  #lme4::lmer(gdd ~ provenance + type + (provenance + type | species), data=bball)
   
   mylist <- list(bball, df, hfclim, arbclim)  
   
