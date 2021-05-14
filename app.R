@@ -85,11 +85,11 @@ ui <- fluidPage(theme = shinytheme("united"),
                                     selected = ("---Choose One---")),
                         sliderInput(inputId = "HypothEffect",
                                     label = "Hypothesis Effect",
-                                    value = 20,
+                                    value = 0,
                                     min = -100, max = 100),
                         sliderInput(inputId = "HypothEffectSD",
                                     label = "Hypothesis Effect SD",
-                                    value = 2, 
+                                    value = 0, 
                                     min = 0, max = 30),
                         sliderInput(inputId = "Fstar",
                                     label = "GDD base threshold",
@@ -110,7 +110,7 @@ ui <- fluidPage(theme = shinytheme("united"),
                         sliderInput(inputId = "MicroEffect",
                                     label = "Microclimate Effect",
                                     value = 0, 
-                                    min = -10, max = 10),
+                                    min = 0, max = 20),
                         textOutput("result"),
                         actionButton("run", "View Plots",
                                      style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
@@ -122,8 +122,9 @@ ui <- fluidPage(theme = shinytheme("united"),
                  tabPanel("Climate Data", 
                           #verbatimTextOutput("print_data"), verbatimTextOutput("strdata"),
                           plotOutput("climtypes"), 
-                          column(2, align="center",plotOutput("hist"))), 
-                 tabPanel("GDDs across Species", plotOutput("gddsites")), 
+                          #column(2, align="center",plotOutput("hist"))
+                          ), 
+                 #tabPanel("GDDs across Species", plotOutput("gddsites")), 
                  tabPanel("Method Accuracy", plotOutput("gdd_accuracy")),
                  tabPanel("Site Accuracy", plotOutput("site_accuracy")),
                  tabPanel("Site x Method", plotOutput("interaction")),
@@ -151,7 +152,7 @@ ui <- fluidPage(theme = shinytheme("united"),
                                                    value = 20, min = -100, max = 100),
                                        sliderInput(inputId = "TXEffectSD",
                                                   label = "Treatment Effect SD",
-                                                  value = 5, min = -0, max = 20),
+                                                  value = 10, min = -0, max = 20),
                                        
                                        sliderInput(inputId = "MethodEffect",
                                                    label = "Method Effect",
@@ -172,7 +173,7 @@ ui <- fluidPage(theme = shinytheme("united"),
                         ),
                       mainPanel(
                         tabsetPanel(
-                          tabPanel("GDDs across Species", plotOutput("gddsitessims")), 
+                          #tabPanel("GDDs across Species", plotOutput("gddsitessims")), 
                                 tabPanel("Method Accuracy", plotOutput("gdd_accuracysims")),
                                 tabPanel("Site Accuracy", plotOutput("site_accuracysims")),
                                 tabPanel("Site x Method", plotOutput("interactionsims")),
@@ -186,10 +187,11 @@ ui <- fluidPage(theme = shinytheme("united"),
   tabPanel("Real Data and Analyze Results",
            mainPanel(
              tabsetPanel(
-               tabPanel("GDDs across Species", 
+               tabPanel("Climate across methods", 
                         #verbatimTextOutput("print_data"),
-                        plotOutput("gddsitesreal")), 
+                        plotOutput("climreal")), 
                tabPanel("Site x Method", plotOutput("interactionreal")),
+               tabPanel("Functional Type", plotOutput("functypereal")),
                tabPanel("Model Output",
                         sidebarLayout(
                           sidebarPanel(
@@ -215,10 +217,10 @@ ui <- fluidPage(theme = shinytheme("united"),
                         tabPanel("Simulating Warming",
                                  sliderInput(inputId = "basetemp",
                                              label = "GDD Base Temperature",
-                                             value = 0, min = 0, max = 15),
+                                             value = 0, min = 0, max = 12),
                                  sliderInput(inputId = "sigma",
                                              label = "SD Temperature",
-                                             value = 0.1, min = 0, max = 5),
+                                             value = 0.1, min = 0, max = 5, step= 0.1),
                                      actionButton("warmrun", "View Plot",
                                                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                             )
@@ -235,17 +237,44 @@ server <- function(input, output) {
   
   
   observe({
-    x <- input$Hypothesis
-    
-    # Can also set the label and select items
-    updateSelectInput("Hypothesis",
-                      choices = x,
-                      label = "HypothEffect",
-                      selected = if(x=="Hypothesis Hobo Logger: weather station is less accurate")
-                      {0}else if(x=="Hypothesis Hobo Logger: hobo loggers are less accurate")
+    updateSelectInput( session=getDefaultReactiveDomain(), "HypothEffect",
+                      label = "Hypothesis Effect",
+                      selected = if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
+                      {0}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate")
                       {0}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){20}else 
                         if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){-5}
                       else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){0}
+    )
+  })
+  
+  observe({
+    updateSelectInput( session=getDefaultReactiveDomain(), "HypothEffectSD",
+                       label = "Hypothesis Effect SD",
+                       selected = if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
+                       {15}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate")
+                       {15}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){2}else 
+                         if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){1}
+                       else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){0}
+    )
+  })
+  
+  observe({
+    updateSelectInput( session=getDefaultReactiveDomain(), "MicroEffect",
+                       label = "Microclimate Effect",
+                       selected = if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
+                       {0}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate")
+                       {0}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){0}else 
+                         if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){0}
+                       else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){15}
+    )
+  })
+  
+  observe({
+    updateSelectInput( session=getDefaultReactiveDomain(), "TXEffect",
+                       label = "Treatment Effect",
+                       selected = if(input$Question=="Urban Model")
+                       {20}else if(input$Question=="Provenance Model")
+                       {-10}
     )
   })
   
@@ -367,65 +396,20 @@ server <- function(input, output) {
            cex=1, bty="n")
   })
   
-  output$gddsites <- renderPlot({
-    bball <- get.data()[[1]]
-    par(mfrow=c(1,2))
-    my.pal <- viridis_pal(option="magma")(20)
-    my.pch <- c(15:16)
-    plot(as.numeric(bball$gdd) ~ as.numeric(as.factor(bball$species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="ws"),], main="Weather Station",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="ws"]), lwd=3)
-    
-    plot(as.numeric(gdd) ~ as.numeric(as.factor(species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="hobo"),], main="Hobo Logger",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="hobo"]), lwd=3)
-  })
   
-  
-  output$gddsitessims <- renderPlot({
-    bball <- get.datasims()[[1]]
-    par(mfrow=c(1,2))
-    my.pal <- viridis_pal(option="magma")(20)
-    my.pch <- c(15:16)
-    plot(as.numeric(bball$gdd) ~ as.numeric(as.factor(bball$species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="ws"),], main="Weather Station",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="ws"]), lwd=3)
-    
-    plot(as.numeric(gdd) ~ as.numeric(as.factor(species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="hobo"),], main="Hobo Logger",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="hobo"]), lwd=3)
-  })
-  
-  output$gddsitesreal <- renderPlot({
-    bball <- get.datareal
-    par(mfrow=c(1,2))
-    my.pal <- viridis_pal(option="magma")(20)
-    my.pch <- c(15:16)
-    plot(as.numeric(bball$gdd) ~ as.numeric(as.factor(bball$spp)), col=my.pal[as.factor(bball$spp)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method==1),], main="Weather Station",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="ws"]), lwd=3)
-    
-    plot(as.numeric(gdd) ~ as.numeric(as.factor(spp)), col=my.pal[as.factor(bball$spp)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method==0),], main="Hobo Logger",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="hobo"]), lwd=3)
-  })
   
   output$climtypes <- renderPlot({
     clim <- get.data()[[2]]
     cols <-viridis_pal(option="viridis")(3)
     ws <- ggplot(clim[(clim$method=="ws"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
       scale_fill_manual(name="Site", values=cols, labels=c(arb="urban", hf="rural")) + ggtitle("Weather Station") +
-      coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
+      #coord_cartesian(xlim=c(-10, 25)) + 
+      xlab("Mean Temp (C)") + ylab("")
     
     hl <- ggplot(clim[(clim$method=="hobo"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
       scale_fill_manual(name="Site", values=cols, labels=c(arb="urban", hf="rural")) + ggtitle("Hobo Logger") +
-      coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
+      #coord_cartesian(xlim=c(-10, 25)) + 
+      xlab("Mean Temp (C)") + ylab("")
     
     grid.arrange(ws, hl, ncol=2)
   })
@@ -438,10 +422,10 @@ server <- function(input, output) {
     ggplot(bball, aes(x=bb)) + geom_histogram(aes(fill=site)) + theme_classic() + theme(legend.position = "none") +
       scale_fill_manual(name="Site", values=cols, labels=sort(unique(bball$site))) +
       coord_cartesian(xlim=c(0, 100)) + xlab("Day of budburst") + ylab("") +
-      geom_text(label=paste0("Arb obs:",nrow(bball[bball$site=="arb",])), col=cols[[1]], aes(x = 80, y = 500), size=7) +
-      geom_text(label=paste0("Arb NAs:",nrow(bball[is.na(bball$site=="arb"),])), col=cols[[1]], aes(x = 79, y = 400), size=7) +
-      geom_text(label=paste0("HF obs:",nrow(bball[bball$site=="hf",])), col=cols[[2]], aes(x = 80, y = 300), size=7) +
-      geom_text(label=paste0("HF NAs:",nrow(bball[is.na(bball$site=="hf"),])), col=cols[[2]], aes(x = 79, y = 200), size=7) 
+      geom_text(label=paste0("Arb obs:",nrow(bball[bball$site=="arb",])), col=cols[[1]], aes(x = 80, y = 500), size=3) +
+      geom_text(label=paste0("Arb NAs:",nrow(bball[is.na(bball$site=="arb"),])), col=cols[[1]], aes(x = 79, y = 400), size=3) +
+      geom_text(label=paste0("HF obs:",nrow(bball[bball$site=="hf",])), col=cols[[2]], aes(x = 80, y = 300), size=3) +
+      geom_text(label=paste0("HF NAs:",nrow(bball[is.na(bball$site=="hf"),])), col=cols[[2]], aes(x = 79, y = 200), size=3) 
   })
   
   
@@ -490,28 +474,26 @@ server <- function(input, output) {
     gddcomparebb
   })
   
-  output$interactionreal <- renderPlot({
-    bball.site <- get.datareal
-    bball.site$methodtype <- ifelse(bball.site$method==1, "\nWeather \nStation", "\nHobo \nLogger")
-    bball.site$site <- bball.site$urban
+  output$interactionreal <- renderImage({
     
-    cols <- viridis_pal(option="plasma")(3)
-    gddcomparebb <- ggplot(bball.site, aes(x=methodtype, y=gdd, group=as.factor(site), fill=as.factor(site))) + 
-      geom_ribbon(stat='smooth', method = "lm", se=TRUE, alpha=1, 
-                  aes(fill = as.factor(site), group = as.factor(site))) +
-      geom_line(stat='smooth', method = "lm", alpha=1, col="black") +
-      theme(panel.background = element_blank(), axis.line = element_line(colour = "black"),
-            legend.text.align = 0,
-            legend.key = element_rect(colour = "transparent", fill = "white"),
-            plot.margin = margin(0.5, 0.5, 0.5, 1, "cm")) +
-      xlab("") + 
-      ylab("Growing degree days to budburst") + 
-      scale_fill_manual(name="Site", values=cols,
-                        labels=c("Urban site", "Rural site")) + 
-      coord_cartesian(expand=0, ylim=c(0,700))
+    intrxn <- normalizePath(file.path("figures/gdd_interaction.pdf"))
     
-    gddcomparebb
-  })
+    list(src = intrxn)
+  }, deleteFile = FALSE)
+  
+  output$climreal <- renderImage({
+    
+    clim <- normalizePath(file.path("figures/climate_smoothdaily.pdf"))
+    
+    list(src = clim)
+  }, deleteFile = FALSE)
+  
+  output$functypereal <- renderImage({
+    
+    funcs <- normalizePath(file.path("figures/functype.pdf"))
+    
+    list(src = funcs)
+  }, deleteFile = FALSE)
   
   
   use.urban <- eventReactive(input$go,{if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
@@ -570,7 +552,7 @@ server <- function(input, output) {
     spnum <- length(unique(bball$species))
     par(xpd=FALSE)
     par(mar=c(5,10,3,10))
-    plot(x=NULL,y=NULL, xlim=c(-100,100), yaxt='n', ylim=c(0,6),
+    plot(x=NULL,y=NULL, xlim=c(-30,50), yaxt='n', ylim=c(0,6),
          xlab="Model estimate change in growing degree days to budburst", ylab="")
     axis(2, at=1:6, labels=rev(labs), las=1)
     abline(v=0, lty=2, col="darkgrey")
@@ -681,90 +663,20 @@ server <- function(input, output) {
   })
   
   observeEvent(input$realrunmod, {
-    output$realmuplot <- renderPlot(height=450, width=550,{
+    output$realmuplot <- renderImage({
       use.real <- use.real()[1]
-      bball <- get.datareal
-      bball$treatmenttype <- if(use.real=="urban"){as.numeric(bball$urban)}else if(use.real=="prov"){
-        as.numeric(bball$provenance)}
+      mus <- normalizePath(file.path(if(use.real=="urban"){"figures/muplot_urban_real.pdf"}else
+        if(use.real=="prov"){"figures/muplot_prov_real.pdf"}))
       
-      datalist.gdd <- with(bball, 
-                           list(y = gdd, 
-                                urban = treatmenttype,
-                                method = method,
-                                sp = as.numeric(as.factor(spp)),
-                                N = nrow(bball),
-                                n_sp = length(unique(bball$spp))
-                           )
-      )
-      
-      
-      progress <- Progress$new(max=10)
-      on.exit(progress$close())
-      
-      progress$set(message = "Running rStan Model", 
-                   detail="This may take a while...")
-      
-      urbmethod_fake = stan('stan/urbanmethod_normal_ncp_inter.stan', data = datalist.gdd,
-                            iter = 1000, warmup=500, chains=4)#, control=list(adapt_delta=0.99, max_treedepth=15)) ### 
-      
-    
-      
-      
-      #})
-      
-      cols <- adjustcolor("indianred3", alpha.f = 0.3) 
-      my.pal <-rep(viridis_pal(option="viridis")(9),2)
-      my.pch <- rep(15:18, each=9)
-      alphahere = 0.4
-      
-      modoutput <- summary(urbmethod_fake)$summary
-      noncps <- modoutput[!grepl("_ncp", rownames(modoutput)),]
-      use.real <- use.real()[1]
-      labs <- if(use.real=="urban"){c("Site", "Method", "Site x Method",
-                                      "Sigma Site", "Sigma Method", 
-                                      "Sigma Interaction")}else if(use.real=="prov"){
-                                        c("Provenance", "Method", "Provenance x Method",
-                                          "Sigma Provenance", "Sigma Method", 
-                                          "Sigma Interaction")}
-      
-      modelhere <- urbmethod_fake
-      bball <- get.datareal
-      spnum <- length(unique(bball$spp))
-      par(xpd=FALSE)
-      par(mar=c(5,9,3,11))
-      plot(x=NULL,y=NULL, xlim=if(use.real=="prov"){c(-30,25)} else if(use.real=="urban"){c(-100,100)}, yaxt='n', ylim=c(0,6),
-           xlab="Model estimate change in growing degree days to budburst", ylab="")
-      axis(2, at=1:6, labels=rev(labs), las=1)
-      abline(v=0, lty=2, col="darkgrey")
-      rownameshere <- c("mu_b_urban_sp", "mu_b_method_sp", "mu_b_um_sp", "sigma_b_urban_sp",
-                        "sigma_b_method_sp", "sigma_b_um_sp")
-      for(i in 1:6){
-        pos.y<-(6:1)[i]
-        pos.x<-noncps[rownameshere[i],"mean"]
-        lines(noncps[rownameshere[i],c("25%","75%")],rep(pos.y,2),col="darkgrey")
-        points(pos.x,pos.y,cex=1.5,pch=19,col="darkblue")
-        for(spsi in 1:spnum){
-          pos.sps.i<-which(grepl(paste0("[",spsi,"]"),rownames(noncps),fixed=TRUE))[2:4]
-          jitt<-(spsi/40) + 0.08
-          pos.y.sps.i<-pos.y-jitt
-          pos.x.sps.i<-noncps[pos.sps.i[i],"mean"]
-          lines(noncps[pos.sps.i[i],c("25%","75%")],rep(pos.y.sps.i,2),
-                col=alpha(my.pal[spsi], alphahere))
-          points(pos.x.sps.i,pos.y.sps.i,cex=0.8, pch=my.pch[spsi], col=alpha(my.pal[spsi], alphahere))
-          
-        }
-      }
-      par(xpd=TRUE) # so I can plot legend outside
-      legend(if(use.real=="prov"){30}else if(use.real=="urban"){120}, 6, sort(unique(gsub("_", " ", bball$spp))), pch=my.pch[1:spnum],
-             col=alpha(my.pal[1:spnum], alphahere),
-             cex=1, bty="n", text.font=3)
-    })
+      list(src = mus)
+    }, deleteFile = FALSE)
   })
   
   
   observeEvent(input$warmrun, {
     output$gddwarm <- renderPlot({
-      gddstuff <- get.warmsims()[[1]]
+      gddstuff <- get.warmsims()[[2]]
+      fstars <- get.warmsims()[[1]]
       
       ggplot(gddstuff, aes(x=warming, y=gddratio)) +
         geom_point(aes(color=fstars)) + 

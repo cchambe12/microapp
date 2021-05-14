@@ -14,10 +14,10 @@ if(FALSE){
 }
 
 
-daysperyr <- 50
+daysperyr <- 150
 nspps <- 100
 
-warmfunc <- function(sigma, basetemp){
+warmfunc <- function(basetemp, sigma){
   
     cc <- 15
     sigma.cc <- sigma
