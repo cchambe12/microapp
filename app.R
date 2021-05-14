@@ -47,14 +47,11 @@ ui <- fluidPage(theme = shinytheme("united"),
                                                 p(style="text-align: justify;","2) Urban environments require more GDDs to leafout than forest habitats."),
                                                 p(style="text-align: justify;","3) Hobo loggers better capture urban or provenance effects."),
                                                 p(style="text-align: justify;","4) Hobo loggers are less accurate measures of the same weather as weather stations."),
-                                                br(),
-                                                h5("and see page ``Hypothesis Testing: Microclimates'' for our final hypothesis:"),
-                                                br(),
                                                 p(style="text-align: justify;","5) Microclimate effects will lead to variation in GDD within sites."),
                                                 br(),
                                                 p(style="text-align: justify;","On this page, you can use the sidebar to select the hypothesis of interest and then adjust GDD threshold and climate data for the simulations."),
                                                 br(),
-                                                h3("Next, we build test data to test our RStan model.s "),
+                                                h3("Next, we build test data to test our RStan models. "),
                                                 h5( "see page ``Simulation Data for Model Testing''"),
                                                 br(),
                                                 p(style="text-align: justify;","On this page, you can use the sidebar to select the type of model of interest (i.e., Urban Model or Provenance Latitude Model) and then adjust the parameter inputs."),
@@ -74,7 +71,7 @@ ui <- fluidPage(theme = shinytheme("united"),
                                       
                       
                       
-                 tabPanel("Hypothesis Testing: Part 1",
+                 tabPanel("Hypothesis Testing",
                       sidebarLayout(
                         sidebarPanel(
                         tabPanel("Hypothesis Testing",
@@ -83,30 +80,37 @@ ui <- fluidPage(theme = shinytheme("united"),
                                                 "Hypothesis Urban: urban sites require more GDDs",
                                                 "Hypothesis Provenance: more Northern provenances require fewer GDDs",
                                                 "Hypothesis Hobo Logger: weather station is less accurate",
-                                                "Hypothesis Hobo Logger: hobo loggers are less accurate"),
-                                                #"Hypothesis Microclimates: variation in GDD within site"),
+                                                "Hypothesis Hobo Logger: hobo loggers are less accurate",
+                                                "Hypothesis Microclimates: variation in GDD within site"),
                                     selected = ("---Choose One---")),
                         sliderInput(inputId = "HypothEffect",
                                     label = "Hypothesis Effect",
-                                    value = 20, min = -100, max = 100),
+                                    value = 20,
+                                    min = -100, max = 100),
                         sliderInput(inputId = "HypothEffectSD",
                                     label = "Hypothesis Effect SD",
-                                    value = 2, min = 0, max = 30),
+                                    value = 2, 
+                                    min = 0, max = 30),
                         sliderInput(inputId = "Fstar",
                                     label = "GDD base threshold",
-                                    value = 300, min = 50, max = 400),
+                                    value = 300, 
+                                    min = 50, max = 400),
                         sliderInput(inputId = "FstarSD",
                                     label = "GDD base threshold SD",
-                                    value = 20, min = 0, max = 100),
+                                    value = 20, 
+                                    min = 0, max = 100),
                         sliderInput(inputId = "MeanClimate",
                                     label = "Mean Temperature",
-                                    value = 10, min = 0, max = 20),
+                                    value = 10, 
+                                    min = 0, max = 20),
                         sliderInput(inputId = "ClimateSD",
                                     label = "SD Temperature",
-                                    value = 3, min = 0, max = 10),
+                                    value = 3, 
+                                    min = 0, max = 10),
                         sliderInput(inputId = "MicroEffect",
                                     label = "Microclimate Effect",
-                                    value = 0, min = -10, max = 10),
+                                    value = 0, 
+                                    min = -10, max = 10),
                         textOutput("result"),
                         actionButton("run", "View Plots",
                                      style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
@@ -130,76 +134,9 @@ ui <- fluidPage(theme = shinytheme("united"),
              ))
              
              ),
+            
              
-             
-             
-             tabPanel("Hypothesis Testing: Part 2",
-                      sidebarLayout(
-                        sidebarPanel(
-                          tabPanel("Hypothesis Testing",
-                                   selectInput("Hypothesis", "Hypothesis",
-                                               choices = c("---Choose One---",
-                                                           "Hypothesis Microclimates: variation in GDD within site"),
-                                               selected = ("---Choose One---")),
-                                   sliderInput(inputId = "HypothEffect",
-                                               label = "Hypothesis Effect",
-                                               value = 0, min = -100, max = 100),
-                                   sliderInput(inputId = "HypothEffectSD",
-                                               label = "Hypothesis Effect SD",
-                                               value = 0, min = 0, max = 30),
-                                   sliderInput(inputId = "Fstar",
-                                               label = "GDD base threshold",
-                                               value = 300, min = 50, max = 400),
-                                   sliderInput(inputId = "FstarSD",
-                                               label = "GDD base threshold SD",
-                                               value = 20, min = 0, max = 100),
-                                   sliderInput(inputId = "ArbMeanClimate",
-                                               label = "Urban Mean Temperature",
-                                               value = 10, min = 0, max = 20),
-                                   sliderInput(inputId = "ArbClimateSD",
-                                               label = "Urban SD Temperature",
-                                               value = 3, min = 0, max = 10),
-                                   sliderInput(inputId = "ArbMicroEffect",
-                                               label = "Urban Microclimate Effect",
-                                               value = 0, min = -10, max = 10),
-                                   sliderInput(inputId = "HFMeanClimate",
-                                               label = "Rural Mean Temperature",
-                                               value = 10, min = 0, max = 20),
-                                   sliderInput(inputId = "HFClimateSD",
-                                               label = "Rural SD Temperature",
-                                               value = 3, min = 0, max = 10),
-                                   sliderInput(inputId = "HFMicroEffect",
-                                               label = "Rural Microclimate Effect",
-                                               value = 0, min = -10, max = 10),
-                                   textOutput("result"),
-                                   actionButton("runmicros", "View Plots",
-                                                style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                          )
-                        ),
-                        
-                        mainPanel(
-                          tabsetPanel(
-                            tabPanel("Climate Data", 
-                                     #verbatimTextOutput("print_data"), verbatimTextOutput("strdata"),
-                                     plotOutput("climtypes"), 
-                                     column(2, align="center",plotOutput("hist"))), 
-                            tabPanel("GDDs across Species", plotOutput("gddsites")), 
-                            tabPanel("Method Accuracy", plotOutput("gdd_accuracy")),
-                            tabPanel("Site Accuracy", plotOutput("site_accuracy")),
-                            tabPanel("Site x Method", plotOutput("interaction")),
-                            tabPanel("Model Output", 
-                                     actionButton("go" ,"Run Model and View muplot"),
-                                     plotOutput("muplot"))
-                          )
-                        ))
-                      
-             ),
-             
-             
-             
-             
-             
-             
+
              tabPanel("Simulation Data for Model Testing",
                       sidebarLayout(
                         sidebarPanel(
@@ -297,6 +234,21 @@ ui <- fluidPage(theme = shinytheme("united"),
 server <- function(input, output) {
   
   
+  observe({
+    x <- input$Hypothesis
+    
+    # Can also set the label and select items
+    updateSelectInput("Hypothesis",
+                      choices = x,
+                      label = "HypothEffect",
+                      selected = if(x=="Hypothesis Hobo Logger: weather station is less accurate")
+                      {0}else if(x=="Hypothesis Hobo Logger: hobo loggers are less accurate")
+                      {0}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){20}else 
+                        if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){-5}
+                      else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){0}
+    )
+  })
+  
   get.data <- eventReactive(input$run, {
     
     progress <- Progress$new(max = 10)
@@ -311,8 +263,8 @@ server <- function(input, output) {
     bbfunc(if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
   {"hobo"}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate")
     {"hobo"}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){"urban"}else 
-    if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){"prov"},
-  #else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"NA"}, 
+    if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){"prov"}
+  else if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"NA"}, 
   if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
   {"ws"}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate"){"hobo"}else 
     if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"NA"},
@@ -323,28 +275,7 @@ server <- function(input, output) {
     
   })
   
-  
-  get.micros <- eventReactive(input$runmicros, {
-    
-    progress <- Progress$new(max = 10)
-    on.exit(progress$close())
-    
-    progress$set(message = "Compiling Simulation Data")
-    for (i in seq_len(10)) {
-      Sys.sleep(0.5)
-      progress$inc(1)
-    }
-    
-    gddfunc(if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"NA"}, 
-    if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"NA"},
-    as.numeric(input$HypothEffect), as.numeric(input$HypothEffectSD),
-    as.numeric(input$Fstar), as.numeric(input$FstarSD),
-    as.numeric(input$ArbMeanClimate), as.numeric(input$ArbClimateSD),
-    as.numeric(input$ArbMicroEffect),
-    as.numeric(input$HFMeanClimate), as.numeric(input$HFClimateSD),
-    as.numeric(input$HFMicroEffect),)
-    
-  })
+
   
   if(TRUE){
   get.datasims <- eventReactive(input$simsgo, {
@@ -400,18 +331,6 @@ server <- function(input, output) {
            cex=1, bty="n")
   })
   
-  output$gdd_accuracymicros <- renderPlot({
-    bball <- get.micros()[[1]]
-    xtext <- seq(1, 2, by=1)
-    cols <-viridis_pal(option="viridis")(3)
-    plot(as.numeric(as.factor(bball$type)), as.numeric(bball$gdd_accuracy), 
-         col=cols[as.factor(bball$method)], ylab="GDD accuracy", xaxt="none",xlab="")
-    axis(side=1, at=xtext, labels = c("Hobo Logger", "Weather Station"))
-    legend(0, -20, sort(unique(gsub("_", " ", bball$method))), pch=19,
-           col=cols[as.factor(bball$method)],
-           cex=1, bty="n")
-  })
-  
   output$gdd_accuracysims <- renderPlot({
     bball <- get.datasims()[[1]]
     xtext <- seq(1, 2, by=1)
@@ -426,18 +345,6 @@ server <- function(input, output) {
   
   output$site_accuracy <- renderPlot({
     bball <- get.data()[[1]]
-    xtext <- seq(1, 2, by=1)
-    cols <-viridis_pal(option="plasma")(3)
-    plot(as.numeric(as.factor(bball$site)), as.numeric(bball$gdd_accuracy), 
-         col=cols[as.factor(bball$site)], xlab="", ylab="GDD accuracy", xaxt="none")
-    axis(side=1, at=xtext, labels = c("Urban site", "Rural site"))
-    legend(0, -20, sort(unique(gsub("_", " ", bball$site))), pch=19,
-           col=cols[as.factor(bball$site)],
-           cex=1, bty="n")
-  })
-  
-  output$site_accuracymicros <- renderPlot({
-    bball <- get.micros()[[1]]
     xtext <- seq(1, 2, by=1)
     cols <-viridis_pal(option="plasma")(3)
     plot(as.numeric(as.factor(bball$site)), as.numeric(bball$gdd_accuracy), 
@@ -476,21 +383,6 @@ server <- function(input, output) {
     abline(h=mean(bball$gdd[bball$method=="hobo"]), lwd=3)
   })
   
-  output$gddsitesmicros <- renderPlot({
-    bball <- get.micros()[[1]]
-    par(mfrow=c(1,2))
-    my.pal <- viridis_pal(option="magma")(20)
-    my.pch <- c(15:16)
-    plot(as.numeric(bball$gdd) ~ as.numeric(as.factor(bball$species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="ws"),], main="Weather Station",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="ws"]), lwd=3)
-    
-    plot(as.numeric(gdd) ~ as.numeric(as.factor(species)), col=my.pal[as.factor(bball$species)], 
-         pch=my.pch[as.factor(bball$site)], data = bball[(bball$method=="hobo"),], main="Hobo Logger",
-         ylab="GDD", ylim=c(0, 600), xlab="Species")
-    abline(h=mean(bball$gdd[bball$method=="hobo"]), lwd=3)
-  })
   
   output$gddsitessims <- renderPlot({
     bball <- get.datasims()[[1]]
@@ -528,29 +420,16 @@ server <- function(input, output) {
     clim <- get.data()[[2]]
     cols <-viridis_pal(option="viridis")(3)
     ws <- ggplot(clim[(clim$method=="ws"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
-      scale_fill_manual(name="Site", values=cols, labels=sort(unique(clim$site))) + ggtitle("Weather Station") +
+      scale_fill_manual(name="Site", values=cols, labels=c(arb="urban", hf="rural")) + ggtitle("Weather Station") +
       coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
     
     hl <- ggplot(clim[(clim$method=="hobo"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
-      scale_fill_manual(name="Site", values=cols, labels=sort(unique(clim$site))) + ggtitle("Hobo Logger") +
+      scale_fill_manual(name="Site", values=cols, labels=c(arb="urban", hf="rural")) + ggtitle("Hobo Logger") +
       coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
     
     grid.arrange(ws, hl, ncol=2)
   })
-  
-  output$climtypesmicros <- renderPlot({
-    clim <- get.micros()[[2]]
-    cols <-viridis_pal(option="viridis")(3)
-    ws <- ggplot(clim[(clim$method=="ws"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
-      scale_fill_manual(name="Site", values=cols, labels=sort(unique(clim$site))) + ggtitle("Weather Station") +
-      coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
-    
-    hl <- ggplot(clim[(clim$method=="hobo"),], aes(x=tmean)) + geom_histogram(aes(fill=site)) + theme_classic() +
-      scale_fill_manual(name="Site", values=cols, labels=sort(unique(clim$site))) + ggtitle("Hobo Logger") +
-      coord_cartesian(xlim=c(-10, 25)) + xlab("Mean Temp (C)") + ylab("")
-    
-    grid.arrange(ws, hl, ncol=2)
-  })
+
   
   
   output$hist <- renderPlot(res=150, height=500, width=500,{
@@ -558,24 +437,11 @@ server <- function(input, output) {
     cols <-viridis_pal(option="plasma")(3)
     ggplot(bball, aes(x=bb)) + geom_histogram(aes(fill=site)) + theme_classic() + theme(legend.position = "none") +
       scale_fill_manual(name="Site", values=cols, labels=sort(unique(bball$site))) +
-      coord_cartesian(xlim=c(0, 100)) + xlab("Day of budburst (C)") + ylab("") +
-      geom_text(label=paste0("Arb obs:",nrow(bball[bball$site=="arb",])), col=cols[[1]], aes(x = 80, y = 100)) +
-      geom_text(label=paste0("Arb NAs:",nrow(bball[is.na(bball$site=="arb"),])), col=cols[[1]], aes(x = 79, y = 90)) +
-      geom_text(label=paste0("HF obs:",nrow(bball[bball$site=="hf",])), col=cols[[2]], aes(x = 80, y = 80)) +
-      geom_text(label=paste0("HF NAs:",nrow(bball[is.na(bball$site=="hf"),])), col=cols[[2]], aes(x = 79, y = 70)) 
-  })
-  
-  
-  output$histmicros <- renderPlot(res=150, height=500, width=500,{
-    bball <- get.micros()[[1]]
-    cols <-viridis_pal(option="plasma")(3)
-    ggplot(bball, aes(x=bb)) + geom_histogram(aes(fill=site)) + theme_classic() + theme(legend.position = "none") +
-      scale_fill_manual(name="Site", values=cols, labels=sort(unique(bball$site))) +
-      coord_cartesian(xlim=c(0, 100)) + xlab("Day of budburst (C)") + ylab("") +
-      geom_text(label=paste0("Urban obs:",nrow(bball[bball$site=="arb",])), col=cols[[1]], aes(x = 80, y = 100)) +
-      geom_text(label=paste0("Urban NAs:",nrow(bball[is.na(bball$site=="arb"),])), col=cols[[1]], aes(x = 79, y = 90)) +
-      geom_text(label=paste0("Rural obs:",nrow(bball[bball$site=="hf",])), col=cols[[2]], aes(x = 80, y = 80)) +
-      geom_text(label=paste0("Rural NAs:",nrow(bball[is.na(bball$site=="hf"),])), col=cols[[2]], aes(x = 79, y = 70)) 
+      coord_cartesian(xlim=c(0, 100)) + xlab("Day of budburst") + ylab("") +
+      geom_text(label=paste0("Arb obs:",nrow(bball[bball$site=="arb",])), col=cols[[1]], aes(x = 80, y = 500), size=7) +
+      geom_text(label=paste0("Arb NAs:",nrow(bball[is.na(bball$site=="arb"),])), col=cols[[1]], aes(x = 79, y = 400), size=7) +
+      geom_text(label=paste0("HF obs:",nrow(bball[bball$site=="hf",])), col=cols[[2]], aes(x = 80, y = 300), size=7) +
+      geom_text(label=paste0("HF NAs:",nrow(bball[is.na(bball$site=="hf"),])), col=cols[[2]], aes(x = 79, y = 200), size=7) 
   })
   
   
@@ -601,27 +467,6 @@ server <- function(input, output) {
     gddcomparebb
   })
   
-  output$interactionmicros <- renderPlot({
-    bball.site <- get.micros()[[1]]
-    bball.site$methodtype <- ifelse(bball.site$method=="ws", "\nWeather \nStation", "\nHobo \nLogger")
-    
-    cols <- viridis_pal(option="plasma")(3)
-    gddcomparebb <- ggplot(bball.site, aes(x=methodtype, y=gdd, group=as.factor(site), fill=as.factor(site))) + 
-      geom_ribbon(stat='smooth', method = "lm", se=TRUE, alpha=1, 
-                  aes(fill = as.factor(site), group = as.factor(site))) +
-      geom_line(stat='smooth', method = "lm", alpha=1, col="black") +
-      theme(panel.background = element_blank(), axis.line = element_line(colour = "black"),
-            legend.text.align = 0,
-            legend.key = element_rect(colour = "transparent", fill = "white"),
-            plot.margin = margin(0.5, 0.5, 0.5, 1, "cm")) +
-      xlab("") + 
-      ylab("Growing degree days to budburst") + 
-      scale_fill_manual(name="Site", values=cols,
-                        labels=c("Urban site", "Rural site")) + 
-      coord_cartesian(expand=0, ylim=c(0,700))
-    
-    gddcomparebb
-  })
   
   output$interactionsims <- renderPlot({
     bball.site <- get.datasims()[[1]]
@@ -671,14 +516,14 @@ server <- function(input, output) {
   
   use.urban <- eventReactive(input$go,{if(input$Hypothesis=="Hypothesis Hobo Logger: weather station is less accurate")
   {"urban"}else if(input$Hypothesis=="Hypothesis Hobo Logger: hobo loggers are less accurate")
-  {"urban"}else if(input$Hypothesis=="Hypothesis Urban: urban sites require fewer GDDs"){"urban"}else 
+  {"urban"}else if(input$Hypothesis=="Hypothesis Urban: urban sites require more GDDs"){"urban"}else 
     if(input$Hypothesis=="Hypothesis Provenance: more Northern provenances require fewer GDDs"){"prov"}else 
       if(input$Hypothesis=="Hypothesis Microclimates: variation in GDD within site"){"urban"}
   })
   
   
   observeEvent(input$go, {
-  output$muplot <- renderPlot(height=650,{
+  output$muplot <- renderPlot(height=450,width=550,{
     use.urban <- use.urban()[1]
       bball <- get.data()[[1]]
       bball$treatmenttype <- if(use.urban=="urban"){ifelse(bball$site=="arb", 1, 0)}else if(use.urban=="prov"){
@@ -748,9 +593,6 @@ server <- function(input, output) {
       }
     }
     par(xpd=TRUE) # so I can plot legend outside
-    legend(120, 6, sort(unique(gsub("_", " ", bball$species))), pch=my.pch[1:spnum],
-           col=alpha(my.pal[1:spnum], alphahere),
-           cex=1, bty="n", text.font=3)
   })
   })
   
@@ -758,7 +600,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$simsrunmod, {
-    output$simsmuplot <- renderPlot(height=650,{
+    output$simsmuplot <- renderPlot(height=450,width=550,{
       use.sims <- use.sims()[1]
       bball <- get.datasims()[[1]]
       bball$treatmenttype <- if(use.sims=="urban"){ifelse(bball$site=="arb", 1, 0)}else if(use.sims=="prov"){
@@ -832,9 +674,6 @@ server <- function(input, output) {
         }
       }
       par(xpd=TRUE) # so I can plot legend outside
-      legend(120, 6, sort(unique(gsub("_", " ", bball$species))), pch=my.pch[1:spnum],
-             col=alpha(my.pal[1:spnum], alphahere),
-             cex=1, bty="n", text.font=3)
     })
   })
 
@@ -842,7 +681,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$realrunmod, {
-    output$realmuplot <- renderPlot(height=650, width=750,{
+    output$realmuplot <- renderPlot(height=450, width=550,{
       use.real <- use.real()[1]
       bball <- get.datareal
       bball$treatmenttype <- if(use.real=="urban"){as.numeric(bball$urban)}else if(use.real=="prov"){
