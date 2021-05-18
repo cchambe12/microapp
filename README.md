@@ -8,5 +8,5 @@
 ### 2. Install the Shiny package in R or Rstudio 
       a) install.packages("shiny")
       
-### 3. In R or Rstudio, run the application
+### 3. In R or Rstudio, run the application. Make sure to update your working directory appropriately. 
       a) runApp("insert_your_working_directory_here/microapp/")
