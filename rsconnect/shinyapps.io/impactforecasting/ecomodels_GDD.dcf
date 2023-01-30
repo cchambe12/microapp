@@ -1,0 +1,13 @@
+name: ecomodels_GDD
+title: ecomodels_GDD
+username:
+account: impactforecasting
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8169280
+bundleId: 6790213
+url: https://impactforecasting.shinyapps.io/ecomodels_GDD/
+when: 1675098375.00112
+lastSyncTime: 1675098375.00116
+asMultiple: FALSE
+asStatic: FALSE
